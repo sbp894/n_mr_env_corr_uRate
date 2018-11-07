@@ -1,6 +1,6 @@
 % in this function, plus and pos are synonymous. Same with minus and neg
 function [corr_s_sn_ValsModFreq_pos, uncorr_sn_n_ValsModFreq_pos, corr_s_n_ValsModFreq_pos, corr_s_sn_ValsModFreq_neg, uncorr_sn_n_ValsModFreq_neg, corr_s_n_ValsModFreq_neg]=...
-    multires_modulation_uR_f0_BP(S_rate_plus_Org, S_rate_minus_Org, N_rate_plus_Org, N_rate_minus_Org, SN_rate_plus_Org, SN_rate_minus_Org, fsOrg, modFreq, outFigDir, curTimeResolution, combine_chi1_mu0, N_bp_half, fName, CF_Hz)
+    multires_modulation_uR_f0_hilb_BP(S_rate_plus_Org, S_rate_minus_Org, N_rate_plus_Org, N_rate_minus_Org, SN_rate_plus_Org, SN_rate_minus_Org, fsOrg, modFreq, outFigDir, curTimeResolution, combine_chi1_mu0, N_bp_half, fName, CF_Hz)
 
 if ~exist('outFigDir', 'var')
     outFigDir=[];
@@ -79,18 +79,28 @@ for modFreqVar=1:length(modFreq)
 %     windowVec= hamming(numel(S_rate_plus))';
     S_rate_pos_filt=filtfilt(curFilt, S_rate_plus.*windowVec);
     S_rate_pos_filt(1:OnsetInds2SetZero)=0;
+    S_rate_pos_filt= abs(hilbert(S_rate_pos_filt));
+    
     SN_rate_pos_filt=filtfilt(curFilt, SN_rate_plus.*windowVec);
     SN_rate_pos_filt(1:OnsetInds2SetZero)=0;
+    SN_rate_pos_filt= abs(hilbert(SN_rate_pos_filt));
+    
     N_rate_pos_filt=filtfilt(curFilt, N_rate_plus.*windowVec);
     N_rate_pos_filt(1:OnsetInds2SetZero)=0;
+    N_rate_pos_filt= abs(hilbert(N_rate_pos_filt));
     
     % for -ve polatiry
     S_rate_neg_filt=filtfilt(curFilt, S_rate_minus);
     S_rate_neg_filt(1:OnsetInds2SetZero)=0;
+    S_rate_neg_filt=abs(hilbert(S_rate_neg_filt));
+    
     SN_rate_neg_filt=filtfilt(curFilt, SN_rate_minus);
     SN_rate_neg_filt(1:OnsetInds2SetZero)=0;
+    SN_rate_neg_filt= abs(hilbert(SN_rate_neg_filt));
+    
     N_rate_neg_filt=filtfilt(curFilt, N_rate_minus);
     N_rate_neg_filt(1:OnsetInds2SetZero)=0;
+    N_rate_neg_filt= abs(hilbert(N_rate_neg_filt));
     
     for windowVar=1:length(cur_s_sn_CorrVals_pos)
         tStart=(windowVar-1)*curTimeResolution;

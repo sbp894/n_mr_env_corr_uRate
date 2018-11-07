@@ -43,7 +43,7 @@ for modFreqVar=1:length(modFreq)
     N_bp=8;
     HalfPowerFrequency1=modFreq/sqrt(2);
     HalfPowerFrequency2=modFreq*sqrt(2);
-    curFilt= designfilt('bandpassiir','FilterOrder',N_bp, ...get(p,props)
+    curFilt= designfilt('bandpassiir','FilterOrder',N_bp, ... 
         'HalfPowerFrequency1',HalfPowerFrequency1,'HalfPowerFrequency2',HalfPowerFrequency2, ...
         'SampleRate',fs);
     

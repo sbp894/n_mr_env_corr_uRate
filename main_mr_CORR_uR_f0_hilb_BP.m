@@ -2,43 +2,54 @@
 clear;
 clc;
 
-chinIDs=[321 322 325 338 341 343 346 347 354 355 361];
-% chinIDs=361;
+chinIDs= [321 322 325 338 341 343 346 347 354 355];
+hanOneModFreqCorr_S_SN= 31;
+hanOneModFrequnCorr_SN_N=32;
+
+% % % % for nh=0:1
+% % % %     if nh
+% % % %         chinIDs=[321 322 325 338 341 343 346 347 354 355];
+% % % %         hanOneModFreqCorr_S_SN=31;
+% % % %         hanOneModFrequnCorr_SN_N=32;
+% % % %     else
+% % % %         chinIDs= 361;
+% % % %         hanOneModFreqCorr_S_SN=1031;
+% % % %         hanOneModFrequnCorr_SN_N=1032;
+% % % %     end
+
 % function plot_mean_rates_per_chin(chinIDs)
-warning('check time resolution 8 ms vs 20 ms');
 hanModFilter=174;
 hanAllModFreqCorr=19;
-hanOneModFreqCorr_S_SN=31;
-hanOneModFrequnCorr_SN_N=32;
 fSize=14;
 leg_fSize=7;
 mrkSize=12;
 
 %% Important params
-saveAllFigs=1;
-N_lp=2;
-% TimeResolution=1/modFreq; % window for correlation.
-TimeResolution=20e-3;
-combine_chi1_mu0=0;
+saveAllFigs=0;
+N_half_bp=4;
 modFreq=128;
+% TimeResolution=1/modFreq; % window for correlation.
+TimeResolution=32e-3;
+combine_chi1_mu0=0;
 
 if combine_chi1_mu0
-    postfix_fName= 'chi';
+    postfix_fName= 'chi'; %#ok<*UNRCH>
 else
     postfix_fName= 'mu';
 end
 
+warning('check time resolution 8 ms vs 20 ms| using %.1f ms now', TimeResolution*1e3);
 
 %%
 loading_Dir='/media/parida/DATAPART1/Matlab/SNRenv/n_mr_sEPSM/OUTPUT/DataAnal/';
 saving_Dir='/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/mr_corr_OUTPUT/';
-Latex_Dir='/home/parida/Dropbox/StudyStuff/Presentations/TorstenPurdueVisit/Figures/';
+Latex_Dir='/home/parida/Dropbox/Study Stuff/Presentations/TorstenPurdueVisit/Figures/';
 
-outFigDir.pdf=sprintf('/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/outFig/uR_f0_LP_%d/pdf/', modFreq);
+outFigDir.pdf=sprintf('/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/outFig/uR_f0_hilb_BP_%d/pdf/', modFreq);
 if ~isdir(outFigDir.pdf)
     mkdir(outFigDir.pdf);
 end
-outFigDir.png=sprintf('/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/outFig/uR_f0_LP_%d/png/', modFreq);
+outFigDir.png=sprintf('/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/outFig/uR_f0_hilb_BP_%d/png/', modFreq);
 if ~isdir(outFigDir.png)
     mkdir(outFigDir.png);
 end
@@ -102,12 +113,13 @@ mr_corr_Data=repmat(struct(...
     'SSNcorr_s_sn_neg_Final', nan, 'SSNuncorr_sn_n_neg_Final', nan, 'SSNcorr_s_n_neg_Final', nan), ...
     size(unique_chin_snr_track_unit_mat, 1), 1);
 
-parfor plotVar=1:size(unique_chin_snr_track_unit_mat,1) % 18 is the first 0 dB SNR ind for unique_chin_snr_track_unit_mat
+%% Main parfor loop
+parfor plotVar= 1:size(unique_chin_snr_track_unit_mat,1)
     cur_inds=find(sum(repmat(unique_chin_snr_track_unit_mat(plotVar,:), size(chin_snr_track_unit_mat,1), 1)==chin_snr_track_unit_mat,2)==size(chin_snr_track_unit_mat,2));
     
     for indVar=1:length(cur_inds)
         
-        curMetaData=all_ChinSpikeData(cur_inds(indVar));
+        curMetaData=all_ChinSpikeData(cur_inds(indVar)); %#ok<PFBNS>
         curSpikeData=curMetaData.SpikeTrains;
         fName=sprintf('data_t%d_u%02d_CF_%1.1fk_SNR%i', curMetaData.track, curMetaData.unit, curMetaData.CF_Hz/1e3, curMetaData.SNR);
         figName=sprintf('Q%d_t%d_u%02d_SNR%i', curMetaData.chinID, curMetaData.track, curMetaData.unit, curMetaData.SNR);
@@ -163,13 +175,13 @@ parfor plotVar=1:size(unique_chin_snr_track_unit_mat,1) % 18 is the first 0 dB S
         if strcmp(curMetaData.noise, 'FLN')
             [mr_corr_Data(plotVar).FLNcorr_s_sn_pos, mr_corr_Data(plotVar).FLNuncorr_sn_n_pos, mr_corr_Data(plotVar).FLNcorr_s_n_pos, ...
                 mr_corr_Data(plotVar).FLNcorr_s_sn_neg, mr_corr_Data(plotVar).FLNuncorr_sn_n_neg, mr_corr_Data(plotVar).FLNcorr_s_n_neg]= ...
-                multires_modulation_uR_f0_LP(S_rate_plus, S_rate_minus, N_rate_plus, N_rate_minus, ...
-                SN_rate_plus, SN_rate_minus, 1/meanrate_binwidth, modFreq, outFigDir, TimeResolution, combine_chi1_mu0, N_lp, [figName '_FLN'], curMetaData.CF_Hz);
+                multires_modulation_uR_f0_hilb_BP(S_rate_plus, S_rate_minus, N_rate_plus, N_rate_minus, ...
+                SN_rate_plus, SN_rate_minus, 1/meanrate_binwidth, modFreq, outFigDir, TimeResolution, combine_chi1_mu0, N_half_bp, [figName '_FLN'], curMetaData.CF_Hz);
         elseif strcmp(curMetaData.noise, 'SSN')
             [mr_corr_Data(plotVar).SSNcorr_s_sn_pos, mr_corr_Data(plotVar).SSNuncorr_sn_n_pos, mr_corr_Data(plotVar).SSNcorr_s_n_pos, ...
                 mr_corr_Data(plotVar).SSNcorr_s_sn_neg, mr_corr_Data(plotVar).SSNuncorr_sn_n_neg, mr_corr_Data(plotVar).SSNcorr_s_n_neg]=...
-                multires_modulation_uR_f0_LP(S_rate_plus, S_rate_minus, N_rate_plus, N_rate_minus, ...
-                SN_rate_plus, SN_rate_minus, 1/meanrate_binwidth, modFreq, outFigDir, TimeResolution, combine_chi1_mu0, N_lp, [figName '_SSN'], curMetaData.CF_Hz);
+                multires_modulation_uR_f0_hilb_BP(S_rate_plus, S_rate_minus, N_rate_plus, N_rate_minus, ...
+                SN_rate_plus, SN_rate_minus, 1/meanrate_binwidth, modFreq, outFigDir, TimeResolution, combine_chi1_mu0, N_half_bp, [figName '_SSN'], curMetaData.CF_Hz);
         end
         mr_corr_Data(plotVar).CF_Hz=curMetaData.CF_Hz;
         mr_corr_Data(plotVar).SR=curMetaData.SR;
@@ -178,7 +190,7 @@ parfor plotVar=1:size(unique_chin_snr_track_unit_mat,1) % 18 is the first 0 dB S
         mr_corr_Data(plotVar).track=curMetaData.track;
         mr_corr_Data(plotVar).unit=curMetaData.unit;
         
-        % Positive
+        % positive uR
         mr_corr_Data(plotVar).FLNcorr_s_sn_pos_Final=nanmean([mr_corr_Data(plotVar).FLNcorr_s_sn_pos]);
         mr_corr_Data(plotVar).FLNuncorr_sn_n_pos_Final=nanmean([mr_corr_Data(plotVar).FLNuncorr_sn_n_pos]);
         mr_corr_Data(plotVar).FLNcorr_s_n_pos_Final=nanmean([mr_corr_Data(plotVar).FLNcorr_s_n_pos]);
@@ -186,7 +198,7 @@ parfor plotVar=1:size(unique_chin_snr_track_unit_mat,1) % 18 is the first 0 dB S
         mr_corr_Data(plotVar).SSNuncorr_sn_n_pos_Final=nanmean([mr_corr_Data(plotVar).SSNuncorr_sn_n_pos]);
         mr_corr_Data(plotVar).SSNcorr_s_n_pos_Final=nanmean([mr_corr_Data(plotVar).SSNcorr_s_n_pos]);
         
-        % Negative
+        % negative uR
         mr_corr_Data(plotVar).FLNcorr_s_sn_neg_Final=nanmean([mr_corr_Data(plotVar).FLNcorr_s_sn_neg]);
         mr_corr_Data(plotVar).FLNuncorr_sn_n_neg_Final=nanmean([mr_corr_Data(plotVar).FLNuncorr_sn_n_neg]);
         mr_corr_Data(plotVar).FLNcorr_s_n_neg_Final=nanmean([mr_corr_Data(plotVar).FLNcorr_s_n_neg]);
@@ -196,10 +208,10 @@ parfor plotVar=1:size(unique_chin_snr_track_unit_mat,1) % 18 is the first 0 dB S
     end
 end
 
-fName2Save=sprintf('%suRate_uR_f0_LP_%d.mat', saving_Dir, modFreq);
+fName2Save=sprintf('%suRate_uR_f0_hilb_BP_%d.mat', saving_Dir, modFreq);
 save(fName2Save, 'mr_corr_Data', 'modFreq');
 
-%% check single modualtion frequency
+%% Compute correlation between R(S) and R(SN)
 figure(hanOneModFreqCorr_S_SN);
 clf;
 
@@ -261,14 +273,12 @@ yyaxis right;
 set(gca, 'ycolor', 'k');
 plot(snrs, FLN_corr_NF_dPrime(:, 3), 'd-k', 'linew', 2, 'markersize', mrkSize);
 plot(snrs, SSN_corr_NF_dPrime(:, 3), 'd-', 'color', .5*ones(1,3), 'linew', 2, 'markersize', mrkSize);
-ylim([0 2.5])
-warning('Forcing yyaxis right limits to match other plots');
 
 xlabel('SNR (dB)');
 if combine_chi1_mu0
     yyaxis left, ylabel('$\overline{\chi ^2}$', 'interpreter', 'latex');
 else
-    yyaxis left, ylabel('$\overline{R_{f0,LP}(S).R_{f0,LP}(SN)}$', 'interpreter', 'latex');
+    yyaxis left, ylabel('$\overline{R_{f0,BP}(S).R_{f0,BP}(SN)}$', 'interpreter', 'latex');
     ylim([0 1]);
 end
 
@@ -340,14 +350,11 @@ xlabel('SNR (dB)');
 if combine_chi1_mu0
     yyaxis left, ylabel('$\overline{\chi ^2}$', 'interpreter', 'latex');
 else
-    yyaxis left, ylabel('$\overline{R_{f0,LP}(S).R_{f0,LP}(SN)}$', 'interpreter', 'latex');
+    yyaxis left, ylabel('$\overline{R_{f0,BP}(S).R_{f0,BP}(SN)}$', 'interpreter', 'latex');
     ylim([0 1]);
 end
 
-yyaxis right;
-ylabel('d-prime');
-ylim([0 2.5]);
-warning('Forcing yyaxis right limits to match other plots');
+yyaxis right; ylabel('d-prime');
 title(sprintf('ModFreq=%.0f Hz (corr(S,SN)), -ve uR', modFreq));
 LG1=legend('SSN', 'SSN-NF', 'SSN-dPrime', 'FLN', 'FLN-NF', 'FLN-dPrime', 'location', 'northwest');
 LG1.FontSize=leg_fSize;
@@ -355,13 +362,13 @@ set(gca, 'fontsize', fSize);
 
 
 set(hanOneModFreqCorr_S_SN, 'units', 'inches', 'position', [1 1 14 5]);
-fName_singleModFreqCorr=sprintf('sEPSM_uR_f0_LP_modFreq%.0fHz_corr_%s_tRes%.0fms', modFreq, postfix_fName, TimeResolution*1e3);
+fName_singleModFreqCorr=sprintf('sEPSM_uR_f0_hilb_BP_modFreq%.0fHz_corr_%s_tRes%.0fms', modFreq, postfix_fName, TimeResolution*1e3);
 if saveAllFigs
     saveas(hanOneModFreqCorr_S_SN, [saving_Dir fName_singleModFreqCorr], 'tiff');
     saveas(hanOneModFreqCorr_S_SN, [Latex_Dir fName_singleModFreqCorr], 'epsc');
 end
 
-%% check single modualtion frequency
+%% Compute 1- {correlation between R(SN) and R(N)}
 figure(hanOneModFrequnCorr_SN_N);
 clf;
 
@@ -423,7 +430,7 @@ xlabel('SNR (dB)');
 if combine_chi1_mu0
     yyaxis left, ylabel('$\overline{\chi ^2}$', 'interpreter', 'latex');
 else
-    yyaxis left, ylabel('$1-\overline{R_{f0,LP}(SN).R_{f0,LP}(N)}$', 'interpreter', 'latex');
+    yyaxis left, ylabel('$1-\overline{R_{f0,BP}(SN).R_{f0,BP}(N)}$', 'interpreter', 'latex');
     ylim([0 1]);
 end
 yyaxis right; ylabel('d-prime');
@@ -489,7 +496,7 @@ xlabel('SNR (dB)');
 if combine_chi1_mu0
     yyaxis left, ylabel('$\overline{\chi ^2}$', 'interpreter', 'latex');
 else
-    yyaxis left, ylabel('$1-\overline{R_{f0,LP}(SN).R_{f0,LP}(N)}$', 'interpreter', 'latex');
+    yyaxis left, ylabel('$1-\overline{R_{f0,BP}(SN).R_{f0,BP}(N)}$', 'interpreter', 'latex');
     ylim([0 1]);
 end
 yyaxis right; ylabel('d-prime');
@@ -499,9 +506,10 @@ LG2.FontSize=leg_fSize;
 set(gca, 'fontsize', fSize);
 
 set(hanOneModFrequnCorr_SN_N, 'units', 'inches', 'position', [1 1 14 5]);
-fName_singleModFrequnCorr=sprintf('sEPSM_uR_f0_LP_modFreq%.0fHz_uncorr_%s_tRes%.0fms', modFreq, postfix_fName, TimeResolution*1e3);
+fName_singleModFrequnCorr=sprintf('sEPSM_uR_f0_hilb_BP_modFreq%.0fHz_uncorr_%s_tRes%.0fms', modFreq, postfix_fName, TimeResolution*1e3);
 
 if saveAllFigs
     saveas(hanOneModFrequnCorr_SN_N, [saving_Dir fName_singleModFrequnCorr], 'tiff');
     saveas(hanOneModFrequnCorr_SN_N, [Latex_Dir fName_singleModFrequnCorr], 'epsc');
 end
+% % % % % end

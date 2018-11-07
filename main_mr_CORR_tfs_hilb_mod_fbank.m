@@ -2,7 +2,8 @@
 clear;
 clc;
 
-chinIDs=[321 322 325 338 341 343];
+chinIDs=355; %[321 322 325 338 341 343];
+% chinIDs=[361];
 % function plot_mean_rates_per_chin(chinIDs)
 hanModFilter=174;
 hanAllModFreqCorr=19;
@@ -79,7 +80,7 @@ mr_corr_Data=repmat(struct(...
     'SSNcorr_s_sn_Final', nan, 'SSNuncorr_sn_n_Final', nan, 'SSNcorr_s_n_Final', nan), ...
     size(unique_chin_snr_track_unit_mat, 1), 1);
 
-for plotVar=1:size(unique_chin_snr_track_unit_mat,1)
+parfor plotVar=1:size(unique_chin_snr_track_unit_mat,1)
     cur_inds=find(sum(repmat(unique_chin_snr_track_unit_mat(plotVar,:), size(chin_snr_track_unit_mat,1), 1)==chin_snr_track_unit_mat,2)==size(chin_snr_track_unit_mat,2));
     
     for indVar=1:length(cur_inds)
