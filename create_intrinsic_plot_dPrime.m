@@ -2,13 +2,14 @@ clear;
 clc;
 
 chinIDs.NH= [321 322 325 338 341 343 346 347 354 355];
-chinIDs.HI= [361 362];
+chinIDs.HI= [358 360 361 362]; %[358 360 361 362];
 
 saveFigs= 1;
 
 outfigDir= '/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/outFig/dPrime_intrinsic_plots/';
-loading_Dir='/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/mr_corr_OUTPUT/';
-modFitlerType= {'LP', 'BP'};
+loading_Dir='/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/mr_corr_OUTPUT/BP_data/';
+% modFitlerType= {'LP', 'BP'};
+modFitlerType= {'BP'};
 
 if ~isdir(outfigDir)
     mkdir(outfigDir);

@@ -10,7 +10,7 @@ for modVar=1:length(allModFreq)
     for winVar= 1:length(allWindows)
         TimeResolution=allWindows(winVar);
         
-        chinIDs=[321 322 325 338 341 343 346 347 354 355 361 362];
+        chinIDs=[321 322 325 338 341 343 346 347 354 355 358 360 361 362];
 
         % function plot_mean_rates_per_chin(chinIDs)
         % warning('check time resolution 8 ms vs 20 ms');
@@ -73,7 +73,7 @@ for modVar=1:length(allModFreq)
             curChinID=chinIDs(chinVar);
             curDirMeta=dir(sprintf('%s*%d*',loading_Dir,curChinID));
             if isempty(curDirMeta)
-                warning('Skipping chin %d. No directory found. Run data_SNRenv_analysis on this chin.', curChinID);
+                warning('Skipping chin %d. No directory found. Run chin_mr_sEPSM_analysis on this chin.', curChinID);
             else
                 if length(curDirMeta)>1
                     [~, dir_ind2use]=sort([curDirMeta.datenum], 'descend');
@@ -86,9 +86,19 @@ for modVar=1:length(allModFreq)
                 
                 load([curDataDir 'SpikeStimulusData.mat']);
                 load([curDataDir 'ExpControlParams.mat']);
-                if isfield(spike_data, 'thresh') %earlier spike_data created using mr_sEPSM do not have thresh
+                if isfield(spike_data, 'thresh') % earlier spike_data created using mr_sEPSM do not have thresh
                     spike_data=rmfield(spike_data, 'thresh');
                 end
+                
+                if isfield(spike_data, 'thresh_dB') % slightly newer version of spike_data created using mr_sEPSM do not have thresh_dB
+                    spike_data=rmfield(spike_data, 'thresh_dB');
+                end
+                
+                % In the future, 
+                %  - need to convert all thresh to thresh_dB
+                %  - don't think running chin_mr_sEPSM_analysis is
+                %  necessary. Decouple that to run this code.
+
                 all_ChinSpikeData=[all_ChinSpikeData, spike_data];  %#ok<*AGROW>
                 chin_snr_track_unit_mat=[chin_snr_track_unit_mat; [repmat(curChinID, length(spike_data),1), [spike_data.SNR]', [spike_data.track]', [spike_data.unit]']];
             end
