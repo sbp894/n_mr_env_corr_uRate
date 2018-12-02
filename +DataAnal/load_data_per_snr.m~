@@ -1,6 +1,6 @@
 % Works for the templates SNRenv_0, SNRenv_m5 and SNRenv_m10.
 
-function [spike_data,StimData,StimsFNames]=load_data_per_snr(ExpControlParams,DataDir,~)
+function [spike_data,StimData,StimsFNames]=load_data_per_snr(ExpControlParams,DataDir,resultsDir)
 
 %% To return: These are the things that will be used later.
 % Sampling Frequency, presentation level, condition_table, spike data corresponding
@@ -20,7 +20,7 @@ CurDir=pwd;
 addpath(CurDir);
 
 %% load data
-if ~strcmp(DataDir(end), filesep)
+if strcmp(DataDir(end), filesep)
    DataDir= strcat(DataDir, filesep); 
 end
 cd (DataDir);
@@ -302,7 +302,4 @@ for i=1:length(condStruct)
     condStruct(i).level=spike_data(i).paramsAnal.level;
 end
 
-% save([resultsDir 'conditions.mat'],'condStruct'); 
-% earlier: function [spike_data,StimData,StimsFNames]=load_data_per_snr(ExpControlParams,DataDir,resultsDir)
-% Now removed resultsDir. 
-% Not sure if there will be any problem in running n_mr_sEPSM
+% save([resultsDir 'conditions.mat'],'condStruct');
