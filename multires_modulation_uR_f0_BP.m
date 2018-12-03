@@ -14,7 +14,7 @@ end
 debugModeOn1=0;
 debugModeOn2=1;
 saveDebugFiles2= 1;
-fs=5e3;
+fs=fsOrg;
 fSize=14;
 textSize=20;
 SetOnsetZeroDuration=.01;
@@ -27,16 +27,16 @@ corr_s_sn_ValsModFreq_neg=nan(length(modFreq),1);
 uncorr_sn_n_ValsModFreq_neg=nan(length(modFreq),1);
 corr_s_n_ValsModFreq_neg=nan(length(modFreq),1);
 
-S_rate_plus=resample(S_rate_plus_Org, 1, fsOrg/fs);
-S_rate_minus=resample(S_rate_minus_Org, 1, fsOrg/fs);
+S_rate_plus=gen_resample(S_rate_plus_Org, fsOrg, fs);
+S_rate_minus=gen_resample(S_rate_minus_Org, fsOrg, fs);
 % S_rate_tfs=S_rate_plus; %(S_rate_plus-S_rate_minus)/2;
 
-N_rate_plus=resample(N_rate_plus_Org, 1, fsOrg/fs);
-N_rate_minus=resample(N_rate_minus_Org, 1, fsOrg/fs);
+N_rate_plus=gen_resample(N_rate_plus_Org, fsOrg, fs);
+N_rate_minus=gen_resample(N_rate_minus_Org, fsOrg, fs);
 % N_rate_tfs=N_rate_plus; %(N_rate_plus-N_rate_minus)/2;
 
-SN_rate_plus=resample(SN_rate_plus_Org, 1, fsOrg/fs);
-SN_rate_minus=resample(SN_rate_minus_Org, 1, fsOrg/fs);
+SN_rate_plus=gen_resample(SN_rate_plus_Org, fsOrg, fs);
+SN_rate_minus=gen_resample(SN_rate_minus_Org, fsOrg, fs);
 % SN_rate_tfs=SN_rate_plus; %(SN_rate_plus-SN_rate_minus)/2;
 
 stimDur=length(S_rate_plus)/fs;

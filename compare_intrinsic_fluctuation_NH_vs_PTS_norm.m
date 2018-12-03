@@ -4,7 +4,7 @@ clc;
 chinIDs.NH= [321 322 325 338 341 343 346 347 354 355];
 chinIDs.HI= [361 362];
 
-saveFigs= 1;
+saveFigs= 0;
 cache_figHandle=1111;
 
 outfigDir= '/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/outFig/intrinsic_plots/';
@@ -80,7 +80,7 @@ for winVar= 1:length(allWindows)
                 plot([mr_corr_Data(validINDs.HI).SSNcorr_s_n_neg_Final], [mr_corr_Data(validINDs.HI).SSNcorr_s_sn_neg_Final], 'dr');
                 [~,pVal]=ttest( ...
                     [ [mr_corr_Data(validINDs.NH).SSNcorr_s_n_neg_Final], [mr_corr_Data(validINDs.NH).SSNcorr_s_n_pos_Final]], ...
-                    [ [mr_corr_Data(validINDs.NH).SSNcorr_s_sn_neg_Final], [mr_corr_Data(validINDs.NH).SSNcorr_s_n_pos_Final] ]);
+                    [ [mr_corr_Data(validINDs.NH).SSNcorr_s_sn_neg_Final], [mr_corr_Data(validINDs.NH).SSNcorr_s_sn_pos_Final] ]);
                 
                 tx= text(0.1, .6, sprintf('$%s |  F_{co}=%.0f Hz | tRes=%.0fms | pVal=%.4f$', curModFiltType, modFreq, TimeResolution*1e3, pVal), 'interpreter', 'latex');
                 

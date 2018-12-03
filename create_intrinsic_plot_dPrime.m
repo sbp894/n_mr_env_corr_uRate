@@ -99,7 +99,7 @@ for winVar= 1:length(allWindows)
     
     if saveFigs
         set(gcf, 'units', 'inches', 'position', [1 1 12 8]);
-        figName2Save=sprintf('%sdPrimePlot_%.0f', outfigDir, TimeResolution*1e3);
+        figName2Save=sprintf('%sdPrimePlot_%.0fms', outfigDir, TimeResolution*1e3);
         saveas(gcf, figName2Save, 'tiff');
     end
 end

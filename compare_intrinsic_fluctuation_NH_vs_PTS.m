@@ -6,11 +6,14 @@
 % 5. generate_bandpass_data
 % Have to remove 4 and directly use 5. Codes already there in
 % LF_speech_analysis/load_danish_data
+
 clear;
 clc;
 
 chinIDs.NH= [321 322 325 338 341 343 346 347 354 355];
 chinIDs.HI= [358 360 361 362];
+
+allchinIDs= [chinIDs.NH chinIDs.HI];
 
 saveFigs= 0;
 cache_figHandle=1111;
@@ -23,10 +26,10 @@ if ~isdir(outfigDir)
     mkdir(outfigDir);
 end
 
-allModFreq=64; % [32 64 128];
-allWindows= 64 *1e-3; %[32 64 128]*1e-3;
+allModFreq=[32 64 128];
+allWindows= [32 64 128]*1e-3;
 fSize= 12;
-SNRs2use= 0 ;%[-10 -5 0];
+SNRs2use= [-10 -5 0];
 
 
 % condition_all= get_conditions(allWindows, modFitlerType, allModFreq);

@@ -10,6 +10,8 @@ fSize=14;
 leg_fSize=7;
 mrkSize=12;
 
+forceRedoAllData= true;
+
 N_BP=4;
 combine_chi1_mu0=0;
 
@@ -63,11 +65,11 @@ for chinVar= 1:length(allchinIDs)
             
             if TimeResolution<=1
                 fName2Save=sprintf('%sQ%d_uRate_uR_f0_BP_%d_nCyc_%.0f.mat', saving_Dir, curChinID, modFreq, curNCycles);
-                if ~exist(fName2Save, 'file')
+                if ~exist(fName2Save, 'file') || forceRedoAllData
                     
                     
                     
-                    meanrate_binwidth=.2e-3; % good for mod freq upto 1/2/binWidth
+                    meanrate_binwidth=.5e-3; % good for mod freq upto 1/2/binWidth
                     
                     snr_track_unit_mat=[[spike_data.SNR]', [spike_data.track]', [spike_data.unit]'];
                     
@@ -84,6 +86,7 @@ for chinVar= 1:length(allchinIDs)
                         'SSNcorr_s_sn_neg_Final', nan, 'SSNuncorr_sn_n_neg_Final', nan, 'SSNcorr_s_n_neg_Final', nan), ...
                         size(unique_chin_snr_track_unit_mat, 1), 1);
                     
+                    % parfor loop
                     parfor plotVar=1:size(unique_chin_snr_track_unit_mat,1) % 18 is the first 0 dB SNR ind for unique_chin_snr_track_unit_mat
                         cur_inds=find(sum(repmat(unique_chin_snr_track_unit_mat(plotVar,:), size(snr_track_unit_mat,1), 1)==snr_track_unit_mat,2)==size(snr_track_unit_mat,2));
                         
