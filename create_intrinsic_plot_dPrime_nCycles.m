@@ -24,9 +24,11 @@ SNRs2use= [-10 -5 0];
 all_numCycles_str= cellfun(@(x) num2str(x),num2cell(all_numCycles), 'uniformoutput', false);
 
 for modVar=1:length(allModFreq)
+    
     modFreq=allModFreq(modVar);
     figure(modVar);
     clf;
+    ax= nan(length(modFitlerType)*length(SNRs2use), 1);
     
     for filtVar=1:length(modFitlerType)
         curModFiltType= modFitlerType{filtVar};
@@ -90,7 +92,7 @@ for modVar=1:length(allModFreq)
                 
             end
             figure(modVar);
-            subplot(length(modFitlerType), length(SNRs2use), (filtVar-1)*length(SNRs2use)+snrVar);
+            ax(snrVar)= subplot(length(modFitlerType), length(SNRs2use), (filtVar-1)*length(SNRs2use)+snrVar);
             grid on;
             if filtVar==1
                 title(sprintf('SNR=%.0f', SNRs2use(snrVar)));
@@ -116,6 +118,8 @@ for modVar=1:length(allModFreq)
     
     subplot(length(modFitlerType), length(SNRs2use), length(modFitlerType)*length(SNRs2use));
     legend('S&SN', 'N&SN', 'location', 'northwest');
+    linkaxes(ax);
+    ylim([-1.5 1.5]);
     
     if saveFigs
         set(gcf, 'units', 'inches', 'position', [1 1 12 8]);
