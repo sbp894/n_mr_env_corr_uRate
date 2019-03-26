@@ -87,7 +87,7 @@ for chinVar= 1:length(allchinIDs)
                         size(unique_chin_snr_track_unit_mat, 1), 1);
                     
                     % parfor loop
-                    parfor plotVar=1:size(unique_chin_snr_track_unit_mat,1) % 18 is the first 0 dB SNR ind for unique_chin_snr_track_unit_mat
+                    for plotVar=1:size(unique_chin_snr_track_unit_mat,1) % 18 is the first 0 dB SNR ind for unique_chin_snr_track_unit_mat
                         cur_inds=find(sum(repmat(unique_chin_snr_track_unit_mat(plotVar,:), size(snr_track_unit_mat,1), 1)==snr_track_unit_mat,2)==size(snr_track_unit_mat,2));
                         
                         for indVar=1:length(cur_inds)

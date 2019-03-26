@@ -48,17 +48,17 @@ for file_var=1:length(allfiles)
     PicData=load(SNRenvFname);
     PicData=PicData.data;
     
-    if isfield(PicData, 'percent_less_than_refractory')
-        if PicData.percent_less_than_refractory < ExpControlParams.THRESHOLD_percent_less_than_refractory
+    if isfield(PicData, 'screening')
+        if PicData.screening.refract_violate_percent < ExpControlParams.THRESHOLD_percent_less_than_refractory
            proceed_flag=1; 
         else % Bad/ noisy triggering.
             proceed_flag=0;
-            fprintf('%s file is excluded. %.2f%% of the ISI was less than absolute refractory period.\n', SNRenvFname, PicData.percent_less_than_refractory);
+            fprintf('%s file is excluded. %.2f%% of the ISI was less than absolute refractory period.\n', SNRenvFname, PicData.screening.refract_violate_percent);
         end
     else
        proceed_flag=1;
        warning('ISI has not been checked against absolute refractory period for file \n \t ---->%s', SNRenvFname);
-       PicData.percent_less_than_refractory=nan;
+       PicData.screening.refract_violate_percent=nan;
     end
     
     if proceed_flag==1
@@ -78,8 +78,8 @@ for file_var=1:length(allfiles)
         
         %% Rest
         %     eval(sprintf('x=Unit_%d_%02d;',trackNUM,unitNUM));
-        x=load(sprintf('Unit_%d_%02d.mat',trackNUM,unitNUM));
-        x=x.data;
+        Unit_Data=load(sprintf('Unit_%d_%02d.mat',trackNUM,unitNUM));
+        Unit_Data=Unit_Data.data;
         
         paramsAnal.dur_msec=PicData.Hardware.Trigger.StmOn;
         paramsAnal.dur_total=PicData.Hardware.Trigger.StmOn+PicData.Hardware.Trigger.StmOff;
@@ -136,10 +136,10 @@ for file_var=1:length(allfiles)
         noiseTypes_for_current_unit=unique({stimParams.noiseType}');
         if length(noiseTypes_for_current_unit)~=1
             condStruct(end+length(noiseTypes_for_current_unit)).CF=nan; %#ok<*AGROW>
-            if isfield(x, 'BFmod')
-                fiberBF = 1e3*x.BFmod; %% Update
-            elseif isfield(x, 'BF')
-                fiberBF = 1e3*x.BF; %% Update
+            if isfield(Unit_Data, 'BFmod')
+                fiberBF = 1e3*Unit_Data.BFmod; %% Update
+            elseif isfield(Unit_Data, 'BF')
+                fiberBF = 1e3*Unit_Data.BF; %% Update
             end
             %         csCell(end-length(noiseTypes_for_current_unit)+1:end,1)=fiberBF+cfDevn2separateFiles;
             [condStruct(end-length(noiseTypes_for_current_unit)+1:end).CF]=deal(fiberBF);
@@ -150,11 +150,12 @@ for file_var=1:length(allfiles)
             temp=dir(SRfName);
             data=load([DataDir temp(1).name]);
             data=data.data;
+            num_of_lines= data.Stimuli.fully_presented_lines - length(data.Stimuli.bad_lines);
             if isempty(data.spikes{1,1})
                 paramsUnit.SR=0;
                 fprintf('The spont rate should be 0 for %s\n',SRFname);
             else
-                paramsUnit.SR=size(data.spikes{1,1},1)/sum(~isnan(unique(data.spikes{1,1}(:,1))));
+                paramsUnit.SR=size(data.spikes{1,1},1)/num_of_lines/(data.Hardware.Trigger.StmOn + data.Hardware.Trigger.StmOff);
             end
             
         elseif ~isempty(dir(SNRenvFname))
@@ -165,7 +166,9 @@ for file_var=1:length(allfiles)
             tIgnore=.05;
             tStimOffStart=(data.Hardware.Trigger.StmOn+tIgnore*1e3)/1e3;
             spkData=spkData(spkData(:,1)<=data.Stimuli.fully_presented_stimuli,2);
-            paramsUnit.SR=sum(spkData>tStimOffStart)/data.Stimuli.fully_presented_stimuli/(data.Hardware.Trigger.StmOff/1e3-tIgnore);
+            num_of_lines= data.Stimuli.fully_presented_lines - length(data.Stimuli.bad_lines);
+            
+            paramsUnit.SR=sum(spkData>tStimOffStart)/num_of_lines/(data.Hardware.Trigger.StmOff/1e3-tIgnore);
             warning('%s not present, need to be updated to exclude badlines (SNRenv file=%s)', SRfName, SNRenvFname);
         else
             paramsUnit.SR=nan;
@@ -180,6 +183,9 @@ for file_var=1:length(allfiles)
             dBs2run=nan(data.Stimuli.fully_presented_lines,1);
             rates=nan(data.Stimuli.fully_presented_lines,1);
             
+            if ~isempty(data.Stimuli.bad_lines)
+               disp('Debugging-- found ya!'); 
+            end
             %%
             PlotRLV=0;
             plotFittedRLV=0;
@@ -208,22 +214,26 @@ for file_var=1:length(allfiles)
         
         %% Find Q10
         cd(CurDir);
-        if ~isempty(dir(TCfName))
-            temp=dir(TCfName);
-            TCdata=load([DataDir temp(1).name]);
-            TCdata=TCdata.data.TcData;
-            TCdata=TCdata(TCdata(:,1)~=0,:); % Get rid of all 0 freqs
-            for i=1:size(TCdata,1)
-                TCdata(i,3)=NELfuns.CalibInterp(TCdata(i,1),CalibData)-TCdata(i,2);
-            end
-            TCdata(:,4)=NELfuns.trifilt(TCdata(:,3)',TFiltWidthTC)';
-            [tempQ10,~,~,~] = NELfuns.findQ10(TCdata(:,1),TCdata(:,4),fiberBF/1e3);
-            %             CF_SR_SAT_Q10_4(unit_var)=tempQ10;
-            paramsUnit.Q10=tempQ10;
-            
+        if isfield(Unit_Data, 'Q10_mod')
+            paramsUnit.Q10=Unit_Data.Q10_mod;
         else
-            %             CF_SR_SAT_Q10_4(unit_var)=nan;
-            paramsUnit.Q10=nan;
+            if ~isempty(dir(TCfName))
+                temp=dir(TCfName);
+                TCdata=load([DataDir temp(1).name]);
+                TCdata=TCdata.data.TcData;
+                TCdata=TCdata(TCdata(:,1)~=0,:); % Get rid of all 0 freqs
+                for i=1:size(TCdata,1)
+                    TCdata(i,3)=NELfuns.CalibInterp(TCdata(i,1),CalibData)-TCdata(i,2);
+                end
+                TCdata(:,4)=NELfuns.trifilt(TCdata(:,3)',TFiltWidthTC)';
+                [tempQ10,~,~,~] = NELfuns.findQ10(TCdata(:,1),TCdata(:,4),fiberBF/1e3);
+                %             CF_SR_SAT_Q10_4(unit_var)=tempQ10;
+                paramsUnit.Q10=tempQ10;
+                
+            else
+                %             CF_SR_SAT_Q10_4(unit_var)=nan;
+                paramsUnit.Q10=nan;
+            end
         end
         cd (DataDir);
         
@@ -257,7 +267,7 @@ for file_var=1:length(allfiles)
             spike_data(cur_spike_data_ind).SR=paramsUnit.SR;
             spike_data(cur_spike_data_ind).CF_Hz=condStruct(Ncases).CF;
             spike_data(cur_spike_data_ind).StimsFNames=StimsFNames{end}; % StimsFNames is unnecessary.
-            spike_data(cur_spike_data_ind).percent_less_than_refractory=PicData.percent_less_than_refractory;
+            spike_data(cur_spike_data_ind).percent_less_than_refractory=PicData.screening.refract_violate_percent;
             
             paramsAnal.CF_Hz=spike_data(cur_spike_data_ind).CF_Hz;
             paramsAnal.Fs=PicData.Stimuli.updateRate_Hz;

@@ -3,7 +3,7 @@
 clear;
 clc;
 
-chinIDs=[321 322 325 338 341 343];
+chinIDs=[321 322 325 338 341 343 346 347 354 355 358 360 361 362];
 % function plot_mean_rates_per_chin(chinIDs)
 hanModFilter=174;
 hanAllModFreqCorr=19;
@@ -14,16 +14,16 @@ fSize=14;
 mrkSize=12;
 
 saveAllFigs=1;
-loading_Dir='/media/parida/DATAPART1/Matlab/SNRenv/n_mr_sEPSM/OUTPUT/DataAnal/';
+loading_Dir='/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/mr_corr_OUTPUT/InData/DanishData/';
 saving_Dir='/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/mr_corr_OUTPUT/';
 Latex_Dir='/home/parida/Dropbox/Study Stuff/Presentations/TorstenPurdueVisit/Figures/';
 
 outFigDir.pdf=sprintf('/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/outFig/tfs_hilb_f0_%d/pdf/', modFreq);
-if ~isdir(outFigDir.pdf)
+if ~isfolder(outFigDir.pdf)
     mkdir(outFigDir.pdf);
 end
 outFigDir.png=sprintf('/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/outFig/tfs_hilb_f0_%d/png/', modFreq);
-if ~isdir(outFigDir.png)
+if ~isfolder(outFigDir.png)
     mkdir(outFigDir.png);
 end
 
@@ -32,7 +32,7 @@ plotAllSNRrate=0;
 plot_modFiltCompare=0;
 fontSize=16;
 
-if ~isdir(saving_Dir)
+if ~isfolder(saving_Dir)
     mkdir(saving_Dir);
 end
 
@@ -60,15 +60,23 @@ for chinVar=1:length(chinIDs)
             curDataDir=[loading_Dir curDirMeta(dir_ind2use).name filesep];
             warning('Multiple directories found. Using the latest dir (%s) for chin %d. ', curDataDir, curChinID);
         else
-            curDataDir=[loading_Dir curDirMeta.name filesep];
+            if exist([loading_Dir curDirMeta.name], 'file')
+                load([loading_Dir curDirMeta.name]);
+            else % probably is a directory 
+                curDataDir=[loading_Dir curDirMeta.name filesep];
+                load([curDataDir 'SpikeStimulusData.mat']);
+                load([curDataDir 'ExpControlParams.mat']);
+            end
         end
         
-        load([curDataDir 'SpikeStimulusData.mat']);
-        load([curDataDir 'ExpControlParams.mat']);
+        if isfield(spike_data, 'thresh') %earlier spike_data created using mr_sEPSM do not have thresh
+            spike_data=rmfield(spike_data, 'thresh');
+        end
         all_ChinSpikeData=[all_ChinSpikeData, spike_data];  %#ok<*AGROW>
         chin_snr_track_unit_mat=[chin_snr_track_unit_mat; [repmat(curChinID, length(spike_data),1), [spike_data.SNR]', [spike_data.track]', [spike_data.unit]']];
     end
 end
+
 
 unique_chin_snr_track_unit_mat=unique(chin_snr_track_unit_mat, 'rows');
 mr_corr_Data=repmat(struct(...

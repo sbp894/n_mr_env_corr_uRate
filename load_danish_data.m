@@ -24,7 +24,7 @@ parfor chinVar=1:length(chinIDs)
     %     if length(loopDataDir)>1
     %         loopDataDir= loopDataDir(contains({loopDataDir.name}', '_AN_'));
     %     end
-    [spike_data, ~, ~]=DataAnal.load_data_per_snr(DataAnal.get_ExpControlParams, [dirStruct.MATDataDir loopDataDir.name]);
+    [spike_data, ~, ~]= DataAnal.load_data_per_snr(DataAnal.get_ExpControlParams, [dirStruct.MATDataDir loopDataDir.name]);
     
     dummy_save([fName2Save '.mat'], spike_data);
 end
@@ -32,6 +32,6 @@ end
 rmpath(dirStruct.CodesDir);
 
 
-function dummy_save(fName, spike_data)
+function dummy_save(fName, spike_data) %#ok<INUSD>
 save(fName, 'spike_data');
 end

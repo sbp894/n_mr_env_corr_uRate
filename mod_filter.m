@@ -8,7 +8,9 @@ S_rate_plus=resample(S_rate_plus_Org, 1, fsOrg/fs);
 S_rate_minus=resample(S_rate_minus_Org, 1, fsOrg/fs);
 % S_rate_tfs=S_rate_plus; %(S_rate_plus-S_rate_minus)/2;
 
-HalfPowerFrequency1=modFreq/sqrt(2);
+warning('Debugging! Uncomment the following line');
+
+HalfPowerFrequency1=1 ;% modFreq/sqrt(2);
 HalfPowerFrequency2=modFreq*sqrt(2);
 curFilt= designfilt('bandpassiir','FilterOrder',N_bp_half, ...get(p,props)
     'HalfPowerFrequency1',HalfPowerFrequency1,'HalfPowerFrequency2',HalfPowerFrequency2, ...

@@ -15,17 +15,17 @@ if ~isdir(outfigDir)
     mkdir(outfigDir);
 end
 
-allModFreq=[4 8 16 32 64 128];
-all_numCycles= [2 3 4 5 10];
+allModFreq= 8; %[4 8 16 32 64 128];
+all_numCycles= 3; %[2 3 4 5 10];
 
 fSize= 12;
-SNRs2use= [-10 -5 0];
+SNRs2use= -5; %[-10 -5 0];
 
 
 % condition_all= get_conditions(allWindows, modFitlerType, allModFreq);
 
 
-for modVar=3:4 %1:length(allModFreq)
+for modVar=1% :4 %1:length(allModFreq)
     modFreq=allModFreq(modVar);
     figure(cache_figHandle);
     clf;

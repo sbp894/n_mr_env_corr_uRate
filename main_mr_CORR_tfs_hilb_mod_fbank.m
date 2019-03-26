@@ -2,29 +2,29 @@
 clear;
 clc;
 
-chinIDs=355; %[321 322 325 338 341 343];
+chinIDs= [358 360 361 362]; %[321 322 325 338 341 343 346 347 354 355];
 % chinIDs=[361];
 % function plot_mean_rates_per_chin(chinIDs)
 hanModFilter=174;
 hanAllModFreqCorr=19;
 hanOneModFreqCorr=31;
-AllmodFreqs=2.^(0:8);
+AllmodFreqs=2.^(0:6);
 fSize=14;
 mrkSize=12;
 
 saveAllFigs=0;
 resaveDataFlag=0;
 
-loading_Dir='/media/parida/DATAPART1/Matlab/SNRenv/n_mr_sEPSM/OUTPUT/DataAnal/';
+loading_Dir='/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/mr_corr_OUTPUT/InData/DanishData/';
 saving_Dir='/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/mr_corr_OUTPUT/';
 Latex_Dir='/home/parida/Dropbox/Study Stuff/Presentations/TorstenPurdueVisit/Figures/';
 
 outFigDir.pdf=sprintf('/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/outFig/tfs_hilb_modfBank/pdf/');
-if ~isdir(outFigDir.pdf)
+if ~isfolder(outFigDir.pdf)
     mkdir(outFigDir.pdf);
 end
 outFigDir.png=sprintf('/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/outFig/tfs_hilb_modfBank/png/');
-if ~isdir(outFigDir.png)
+if ~isfolder(outFigDir.png)
     mkdir(outFigDir.png);
 end
 
@@ -33,7 +33,7 @@ plotAllSNRrate=0;
 plot_modFiltCompare=0;
 fontSize=16;
 
-if ~isdir(saving_Dir)
+if ~isfolder(saving_Dir)
     mkdir(saving_Dir);
 end
 
@@ -61,11 +61,18 @@ for chinVar=1:length(chinIDs)
             curDataDir=[loading_Dir curDirMeta(dir_ind2use).name filesep];
             warning('Multiple directories found. Using the latest dir (%s) for chin %d. ', curDataDir, curChinID);
         else
-            curDataDir=[loading_Dir curDirMeta.name filesep];
+            if exist([loading_Dir curDirMeta.name], 'file')
+                load([loading_Dir curDirMeta.name]);
+            else % probably is a directory 
+                curDataDir=[loading_Dir curDirMeta.name filesep];
+                load([curDataDir 'SpikeStimulusData.mat']);
+                load([curDataDir 'ExpControlParams.mat']);
+            end
         end
         
-        load([curDataDir 'SpikeStimulusData.mat']);
-        load([curDataDir 'ExpControlParams.mat']);
+        if isfield(spike_data, 'thresh') %earlier spike_data created using mr_sEPSM do not have thresh
+            spike_data=rmfield(spike_data, 'thresh');
+        end
         all_ChinSpikeData=[all_ChinSpikeData, spike_data];  %#ok<*AGROW>
         chin_snr_track_unit_mat=[chin_snr_track_unit_mat; [repmat(curChinID, length(spike_data),1), [spike_data.SNR]', [spike_data.track]', [spike_data.unit]']];
     end
@@ -214,7 +221,7 @@ plot(snrs, SSN_corr_NF_dPrime(:, 3), 'd-', 'color', .5*ones(1,3), 'linew', 2, 'm
 xlabel('SNR (dB)');
 yyaxis left, ylabel('Chi (avged across time)');
 yyaxis right; ylabel('d-prime');
-title('Using 1-256 Hz mod Freq/ mr-sEPSMcorr');
+title(sprintf('Using %d-%d Hz mod Freq/ mr-sEPSMcorr', min(AllmodFreqs), max(AllmodFreqs)));
 legend('SSN', 'SSN-NF', 'SSN-dPrime', 'FLN', 'FLN-NF', 'FLN-dPrime', 'location', 'northwest');
 
 set(hanAllModFreqCorr, 'units', 'inches', 'position', [1 1 8 5]);

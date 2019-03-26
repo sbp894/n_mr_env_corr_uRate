@@ -2,7 +2,8 @@
 clear;
 clc;
 
-chinIDs=[321 322 325 338 341 343 346 347 354 355 361 362];
+chinIDs=[321 322 325 338 341 343 346 347 354 355 358 360 361 362];
+% chinIDs= [358 360];
 % chinIDs=[361];
 % % % % for nh=0:1
 % % % %     if nh
@@ -22,9 +23,9 @@ hanAllModFreqCorr=19;
 %% Important params
 saveAllFigs=0;
 N_half_bp=4;
-modFreq=128;
-% TimeResolution=1/modFreq; % window for correlation.
-TimeResolution=20e-3;
+modFreq=8;
+TimeResolution=2/modFreq; % window for correlation.
+% TimeResolution=20e-3;
 combine_chi1_mu0=0;
 
 if combine_chi1_mu0
@@ -36,29 +37,32 @@ end
 warning('check time resolution 8 ms vs 20 ms| using %.1f ms now', TimeResolution*1e3);
 
 %%
-loading_Dir='/media/parida/DATAPART1/Matlab/SNRenv/n_mr_sEPSM/OUTPUT/DataAnal/';
+% loading_Dir='/media/parida/DATAPART1/Matlab/SNRenv/n_mr_sEPSM/OUTPUT/DataAnal/';
+loading_Dir='/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/mr_corr_OUTPUT/InData/DanishData/';
 saving_Dir='/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/mr_corr_OUTPUT/';
 Latex_Dir='/home/parida/Dropbox/Study Stuff/Presentations/TorstenPurdueVisit/Figures/';
 
 outFigDir.pdf=sprintf('/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/outFig/uR_f0_BP_%d/pdf/', modFreq);
-if ~isdir(outFigDir.pdf)
+if ~isfolder(outFigDir.pdf)
     mkdir(outFigDir.pdf);
 end
 outFigDir.png=sprintf('/media/parida/DATAPART1/Matlab/SNRenv/n_mr_env_corr_uRate/outFig/uR_f0_BP_%d/png/', modFreq);
-if ~isdir(outFigDir.png)
+if ~isfolder(outFigDir.png)
     mkdir(outFigDir.png);
 end
+
+outFigDir.latex= '/home/parida/Dropbox/Conferences/ARO-2019/latex/Figures/eps/';
 
 plotWindowWeights=0;
 plotAllSNRrate=0;
 plot_modFiltCompare=0;
 fontSize=16;
 
-if ~isdir(saving_Dir)
+if ~isfolder(saving_Dir)
     mkdir(saving_Dir);
 end
 
-meanrate_binwidth=.2e-3; % good for mod freq upto 1/2/binWidth
+meanrate_binwidth=.5e-3; % good for mod freq upto 1/2/binWidth
 
 modFreqWeights=[1  1  1  1  1   1   1    1    1    1];
 % ------------- 1  2  4  8 16   32  64  128  256  512
@@ -82,11 +86,15 @@ for chinVar=1:length(chinIDs)
             curDataDir=[loading_Dir curDirMeta(dir_ind2use).name filesep];
             warning('Multiple directories found. Using the latest dir (%s) for chin %d. ', curDataDir, curChinID);
         else
-            curDataDir=[loading_Dir curDirMeta.name filesep];
+            if exist([loading_Dir curDirMeta.name], 'file')
+                load([loading_Dir curDirMeta.name]);
+            else % probably is a directory 
+                curDataDir=[loading_Dir curDirMeta.name filesep];
+                load([curDataDir 'SpikeStimulusData.mat']);
+                load([curDataDir 'ExpControlParams.mat']);
+            end
         end
         
-        load([curDataDir 'SpikeStimulusData.mat']);
-        load([curDataDir 'ExpControlParams.mat']);
         if isfield(spike_data, 'thresh') %earlier spike_data created using mr_sEPSM do not have thresh
             spike_data=rmfield(spike_data, 'thresh');
         end
@@ -109,7 +117,8 @@ mr_corr_Data=repmat(struct(...
     size(unique_chin_snr_track_unit_mat, 1), 1);
 
 %% Main parfor loop
-parfor plotVar= 1:size(unique_chin_snr_track_unit_mat,1)
+% parfor plotVar= 1:size(unique_chin_snr_track_unit_mat,1)
+for plotVar= 286
     cur_inds=find(sum(repmat(unique_chin_snr_track_unit_mat(plotVar,:), size(chin_snr_track_unit_mat,1), 1)==chin_snr_track_unit_mat,2)==size(chin_snr_track_unit_mat,2));
     
     for indVar=1:length(cur_inds)
@@ -171,12 +180,12 @@ parfor plotVar= 1:size(unique_chin_snr_track_unit_mat,1)
             [mr_corr_Data(plotVar).FLNcorr_s_sn_pos, mr_corr_Data(plotVar).FLNuncorr_sn_n_pos, mr_corr_Data(plotVar).FLNcorr_s_n_pos, ...
                 mr_corr_Data(plotVar).FLNcorr_s_sn_neg, mr_corr_Data(plotVar).FLNuncorr_sn_n_neg, mr_corr_Data(plotVar).FLNcorr_s_n_neg]= ...
                 multires_modulation_uR_f0_BP(S_rate_plus, S_rate_minus, N_rate_plus, N_rate_minus, ...
-                SN_rate_plus, SN_rate_minus, 1/meanrate_binwidth, modFreq, outFigDir, TimeResolution, combine_chi1_mu0, N_half_bp, [figName '_FLN'], curMetaData.CF_Hz);
+                SN_rate_plus, SN_rate_minus, 1/meanrate_binwidth, modFreq, outFigDir, TimeResolution, combine_chi1_mu0, N_half_bp, [figName '_FLN'], curMetaData);
         elseif strcmp(curMetaData.noise, 'SSN')
             [mr_corr_Data(plotVar).SSNcorr_s_sn_pos, mr_corr_Data(plotVar).SSNuncorr_sn_n_pos, mr_corr_Data(plotVar).SSNcorr_s_n_pos, ...
                 mr_corr_Data(plotVar).SSNcorr_s_sn_neg, mr_corr_Data(plotVar).SSNuncorr_sn_n_neg, mr_corr_Data(plotVar).SSNcorr_s_n_neg]=...
                 multires_modulation_uR_f0_BP(S_rate_plus, S_rate_minus, N_rate_plus, N_rate_minus, ...
-                SN_rate_plus, SN_rate_minus, 1/meanrate_binwidth, modFreq, outFigDir, TimeResolution, combine_chi1_mu0, N_half_bp, [figName '_SSN'], curMetaData.CF_Hz);
+                SN_rate_plus, SN_rate_minus, 1/meanrate_binwidth, modFreq, outFigDir, TimeResolution, combine_chi1_mu0, N_half_bp, [figName '_SSN'], curMetaData);
         end
         mr_corr_Data(plotVar).CF_Hz=curMetaData.CF_Hz;
         mr_corr_Data(plotVar).SR=curMetaData.SR;
@@ -203,9 +212,9 @@ parfor plotVar= 1:size(unique_chin_snr_track_unit_mat,1)
     end
 end
 
-fName2Save=sprintf('%suRate_uR_f0_BP_%d.mat', saving_Dir, modFreq);
-save(fName2Save, 'mr_corr_Data', 'modFreq');
+% % % fName2Save=sprintf('%suRate_uR_f0_BP_%d.mat', saving_Dir, modFreq);
+% % % save(fName2Save, 'mr_corr_Data', 'modFreq');
 
 
-plot_population_plots(mr_corr_Data, modFreq, combine_chi1_mu0, postfix_fName, TimeResolution, saveAllFigs);
+% % % % plot_population_plots(mr_corr_Data, modFreq, combine_chi1_mu0, postfix_fName, TimeResolution, saveAllFigs);
 % % % % % end

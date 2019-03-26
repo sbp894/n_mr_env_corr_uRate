@@ -30,7 +30,7 @@ for nh=0:1
     %% Important params
     saveAllFigs=0;
     N_half_bp=4;
-    modFreq=128;
+    modFreq=64;
     fs=1e3;
     force_redo= 0;
     
